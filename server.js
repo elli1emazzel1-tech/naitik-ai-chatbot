@@ -9,7 +9,13 @@ import mongoose from "mongoose"; // 🟢 Added for database
 dotenv.config();
 
 const app = express();
-app.use(cors());
+
+// 🟢 FIXED CORS CONFIGURATION TO ALLOW YOUR LIVE SITE
+app.use(cors({
+  origin: "https://elli1emazzel1-tech.github.io",
+  credentials: true
+}));
+
 app.use(express.json());
 
 // 🟢 CONNECT TO MONGO_DB ATLAS
