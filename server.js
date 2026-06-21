@@ -4,12 +4,25 @@ import dotenv from "dotenv";
 import Groq from "groq-sdk";
 import { tavily } from "@tavily/core";
 import rateLimit from "express-rate-limit";
+import mongoose from "mongoose"; // 🟢 Added for database
 
 dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// 🟢 CONNECT TO MONGO_DB ATLAS
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("🟢 DB connected successfully!"))
+  .catch(err => console.log("❌ DB connection error:", err));
+
+// 🟢 CREATE THE USER TEMPLATE (SCHEMA) FOR AUTHENTICATION
+const userSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  password: { type: String, required: true }
+});
+const User = mongoose.model("User", userSchema);
 
 // Global Request Logger Middleware
 app.use((req, res, next) => {
@@ -36,6 +49,36 @@ app.get("/", (req, res) => {
   res.send("AI chatbot is running 🚀");
 });
 
+// 🟢 SIGNUP ROUTE (Saves a new user to MongoDB)
+app.post("/api/signup", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const existingUser = await User.findOne({ username });
+    if (existingUser) return res.status(400).json({ reply: "Username already taken" });
+
+    const newUser = new User({ username, password });
+    await newUser.save();
+    res.status(201).json({ reply: "User registered successfully!" });
+  } catch (err) {
+    res.status(500).json({ reply: "Error: " + err.message });
+  }
+});
+
+// 🟢 LOGIN ROUTE (Checks credentials against MongoDB)
+app.post("/api/login", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const user = await User.findOne({ username });
+    if (!user || user.password !== password) {
+      return res.status(400).json({ reply: "Invalid username or password" });
+    }
+    res.status(200).json({ reply: "Login successful!", username: user.username });
+  } catch (err) {
+    res.status(500).json({ reply: "Error: " + err.message });
+  }
+});
+
+// AI CHAT ROUTE
 app.post("/chat", chatLimiter, async (req, res) => {
   try {
     // 1. Grab the conversation history array and selected agent from the frontend request
