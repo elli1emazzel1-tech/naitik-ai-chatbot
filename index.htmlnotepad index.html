@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #1e1e1e;
+      color: #e3e3e3;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── SIDEBAR STYLE ── */
+    .sidebar {
+      width: 260px;
+      background: #171717;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #2f2f2f;
+      flex-shrink: 0;
+      justify-content: space-between;
+    }
+    .sidebar-top-section { flex: 1; overflow-y: auto; }
+    .sidebar-top { padding: 16px; }
+    
+    .new-chat-btn {
+      width: 100%;
+      padding: 10px 14px;
+      background: transparent;
+      border: 1px solid #2f2f2f;
+      border-radius: 6px;
+      color: #e3e3e3;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.2s;
+    }
+    .new-chat-btn:hover { background: #212121; }
+
+    .sidebar-label {
+      padding: 20px 16px 6px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #8e8e8e;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .chat-list { padding: 0 8px; display: flex; flex-direction: column; gap: 2px; }
+    
+    .chat-item {
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 13.5px;
+      color: #c5c5c5;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      transition: background 0.15s;
+    }
+    .chat-item:hover { background: #212121; }
+    .chat-item.active { background: #212121; font-weight: 500; color: #ffffff; }
+    
+    .chat-item-main { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; }
+    .chat-item-icon { font-size: 14px; width: 16px; text-align: center; flex-shrink: 0; }
+    .chat-item-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .pin-action-btn {
+      background: transparent;
+      border: none;
+      color: #727272;
+      cursor: pointer;
+      font-size: 12px;
+      opacity: 0;
+      padding: 2px;
+      border-radius: 4px;
+      transition: opacity 0.15s, color 0.15s;
+    }
+    .chat-item:hover .pin-action-btn { opacity: 1; }
+    .pin-action-btn:hover { color: #ffffff; background: #2f2f2f; }
+
+    .empty-log-text { font-size: 12px; color: #555555; padding: 6px 16px; font-style: italic; }
+
+    .sidebar-footer {
+      padding: 14px 16px;
+      border-top: 1px solid #2f2f2f;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #171717;
+    }
+    .profile-section { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: #ab68ff; display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 600; color: white; flex-shrink: 0;
+    }
+    .profile-name { font-size: 14px; color: #e3e3e3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* ── MAIN WORKSPACE ── */
+    .chat-area { flex: 1; display: flex; flex-direction: column; background: #212121; position: relative; }
+    .chat-header { padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; }
+    .header-left { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: #e3e3e3; }
+    .header-left::before { content: "●"; color: #4b96ff; font-size: 10px; }
+    .header-right { font-size: 12px; color: #8e8e8e; }
+
+    /* CLEAN TEXT MESSAGES STREAM (NO BUBBLES) */
+    .messages { flex: 1; overflow-y: auto; padding: 24px 40px; max-width: 800px; margin: 0 auto; width: 100%; }
+    .msg-wrapper { margin: 18px 0; line-height: 1.6; font-size: 15px; white-space: pre-wrap; word-break: break-word; }
+    .msg-label { font-weight: 600; margin-bottom: 4px; display: block; color: #ffffff; }
+    .msg-label.user-label { color: #ab68ff; }
+    .msg-label.ai-label { color: #4b96ff; }
+
+    /* WELCOME SCREEN */
+    .welcome { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 0; text-align: center; margin: auto; }
+    .welcome-star { width: 44px; height: 44px; border-radius: 50%; background: #2f2f2f; border: 1px solid #424242; display: flex; align-items: center; justify-content: center; color: #4b96ff; font-size: 16px; margin-bottom: 24px; }
+    .welcome h2 { font-size: 28px; font-weight: 500; color: #ffffff; margin-bottom: 12px; }
+    .welcome p { font-size: 14px; color: #b4b4b4; max-width: 480px; margin-bottom: 32px; line-height: 1.4; }
+
+    .suggestion-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; max-width: 640px; }
+    .suggestion { padding: 14px 16px; background: #2f2f2f; border: 1px solid #3c3c3c; border-radius: 10px; font-size: 13px; color: #b4b4b4; cursor: pointer; text-align: left; line-height: 1.4; }
+    .suggestion:hover { background: #353535; }
+    .suggestion strong { display: block; color: #ffffff; font-weight: 500; margin-bottom: 2px; }
+
+    /* INPUT CONTROLS */
+    .input-wrap { padding: 0 40px 20px; max-width: 800px; margin: 0 auto; width: 100%; }
+    .input-inner { background: #2f2f2f; border-radius: 24px; display: flex; align-items: center; padding: 6px 14px; gap: 8px; }
+    
+    .action-btn { background: transparent; border: none; color: #b4b4b4; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; font-weight: bold; }
+    .action-btn:hover { color: #ffffff; background: #3c3c3c; }
+    
+    #input { flex: 1; background: transparent; border: none; outline: none; color: #ffffff; font-size: 15px; font-family: inherit; padding: 8px 4px; }
+    #input::placeholder { color: #8e8e8e; }
+    
+    .clear-chat-btn { background: transparent; border: 1px solid #424242; color: #b4b4b4; border-radius: 16px; padding: 4px 12px; font-size: 12px; font-family: inherit; cursor: pointer; margin-right: 4px; }
+    .clear-chat-btn:hover { background: #3c3c3c; color: #ffffff; }
+
+    .send-btn { width: 28px; height: 28px; border-radius: 50%; background: #ffffff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #212121; font-weight: bold; transition: opacity 0.2s; }
+    .send-btn:hover { opacity: 0.9; }
+    .send-btn:disabled { background: #424242; color: #212121; cursor: not-allowed; }
+
+    .input-hint { text-align: center; font-size: 12px; color: #8e8e8e; margin-top: 12px; }
+
+    /* ── SYSTEM CONFIGURATION SIDE PANEL ── */
+    .config-panel {
+      position: absolute; top: 0; right: -320px; width: 320px; height: 100%;
+      background: #1e1e1e; border-left: 1px solid #2f2f2f; box-shadow: -4px 0 16px rgba(0,0,0,0.3);
+      display: flex; flex-direction: column; transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 100;
+    }
+    .config-panel.open { right: 0; }
+    .config-header { padding: 16px; border-bottom: 1px solid #2f2f2f; display: flex; align-items: center; justify-content: space-between; }
+    .config-header h3 { font-size: 15px; font-weight: 600; color: #ffffff; }
+    .config-header-close { background: transparent; border: none; color: #8e8e8e; cursor: pointer; font-size: 16px; }
+    .config-header-close:hover { color: #ffffff; }
+    .config-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; font-size: 13px; }
+    
+    .config-group { display: flex; flex-direction: column; gap: 6px; }
+    .config-group label { color: #b4b4b4; font-weight: 500; }
+    .config-group input[type="text"], .config-group select {
+      background: #2f2f2f; border: 1px solid #424242; border-radius: 6px; color: #ffffff; padding: 8px 10px; font-family: inherit; outline: none; font-size: 13px;
+    }
+    .config-group input[type="text"]:focus, .config-group select:focus { border-color: #555555; }
+    
+    .config-row-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+    .panel-btn { background: #2f2f2f; border: 1px solid #424242; color: #ffffff; padding: 8px; border-radius: 6px; cursor: pointer; text-align: center; font-weight: 500; transition: background 0.2s; }
+    .panel-btn:hover { background: #3c3c3c; }
+  </style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-top-section">
+    <div class="sidebar-top">
+      <button class="new-chat-btn" onclick="newChat()"><span>+</span> New chat</button>
+    </div>
+    
+    <div class="sidebar-label">Active Agents</div>
+    <div class="chat-list" id="agentList">
+      <div id="agent-research" class="chat-item active" onclick="setAgent('research')">
+        <div class="chat-item-main"><span class="chat-item-icon">🔍</span><span class="chat-item-text">Research Assistant</span></div>
+      </div>
+      <div id="agent-document" class="chat-item" onclick="setAgent('document')">
+        <div class="chat-item-main"><span class="chat-item-icon">📂</span><span class="chat-item-text">Document Chatbot</span></div>
+      </div>
+      <div id="agent-coding" class="chat-item" onclick="setAgent('coding')">
+        <div class="chat-item-main"><span class="chat-item-icon">💻</span><span class="chat-item-text">Coding Intelligence</span></div>
+      </div>
+      <div id="agent-writer" class="chat-item" onclick="setAgent('writer')">
+        <div class="chat-item-main"><span class="chat-item-icon">✍️</span><span class="chat-item-text">Content Writer</span></div>
+      </div>
+      <div id="agent-business" class="chat-item" onclick="setAgent('business')">
+        <div class="chat-item-main"><span class="chat-item-icon">📊</span><span class="chat-item-text">Business Knowledge Bot</span></div>
+      </div>
+    </div>
+
+    <div class="sidebar-label">Pinned</div>
+    <div class="chat-list" id="pinnedList">
+      <div class="empty-log-text" id="pinnedEmptyState">No pinned chats</div>
+    </div>
+
+    <div class="sidebar-label">Recents</div>
+    <div class="chat-list" id="historyList">
+      <div class="empty-log-text" id="historyEmptyState">No recent conversations</div>
+    </div>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="profile-section">
+      <div class="avatar" id="avatarIcon">N</div>
+      <span class="profile-name" id="profileNameLabel">Naitik</span>
+    </div>
+  </div>
+</div>
+
+<div class="chat-area">
+  <div class="chat-header">
+    <div class="header-left" id="currentAgentTitle">Research Assistant</div>
+    <div class="header-right">Powered by AI Cluster</div>
+  </div>
+
+  <div id="messagesWrapper" class="messages">
+    <div id="welcome" class="welcome">
+      <div class="welcome-star">★</div>
+      <h2>How can I help you today?</h2>
+      <p>Ask me anything — I will switch system modes depending on your active selected Agent side panel tool.</p>
+      
+      <div class="suggestion-grid">
+        <div class="suggestion" onclick="useSuggestion('Search the web for latest news today')">
+          <strong>🔍 Search the web</strong>Latest news today
+        </div>
+        <div class="suggestion" onclick="useSuggestion('Explain how AI works')">
+          <strong>💡 Explain something</strong>How does AI work?
+        </div>
+        <div class="suggestion" onclick="useSuggestion('Draft a short email')">
+          <strong>✍️ Write for me</strong>Draft a short email
+        </div>
+        <div class="suggestion" onclick="useSuggestion('Help me with math')">
+          <strong>🧮 Solve a problem</strong>Help me with math
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="input-wrap">
+    <div class="input-inner">
+      <button class="action-btn" title="System Configuration" onclick="toggleConfigPanel()">+</button>
+      <input type="text" id="input" placeholder="Message AI Assistant...">
+      <button class="clear-chat-btn" onclick="newChat()">Clear Chat</button>
+      <button class="send-btn" id="sendBtn" onclick="sendMessage()">➔</button>
+    </div>
+    <div class="input-hint">AI can make mistakes. Always verify important info.</div>
+  </div>
+
+  <div class="config-panel" id="configPanel">
+    <div class="config-header">
+      <h3>System Configuration</h3>
+      <button class="config-header-close" onclick="toggleConfigPanel()">✕</button>
+    </div>
+    <div class="config-body">
+      <div class="config-group">
+        <label for="cfgLength">Response Length:</label>
+        <select id="cfgLength">
+          <option value="short">Short (Concise)</option>
+          <option value="medium" selected>Medium (Standard)</option>
+          <option value="long">Long (Detailed Explanation)</option>
+        </select>
+      </div>
+      <hr style="border: 0; border-top: 1px solid #2f2f2f; margin: 8px 0;">
+      <div class="config-group">
+        <label>User Identifier:</label>
+        <input type="text" id="cfgUserIdentifier" value="Naitik" oninput="updateSystemLabels()">
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentAgent = "research";
+
+  const agents = {
+    research: "You are a research assistant. Give detailed, factual, well-explained answers.",
+    coding: "You are a senior software engineer. Give clean code and technical explanations.",
+    writer: "You are a professional writer. Write clearly and creatively.",
+    business: "You are a business expert. Give structured, analytical answers.",
+    document: "You help analyze documents and data carefully."
+  };
+
+  const wrapper = document.getElementById('messagesWrapper');
+  const welcome = document.getElementById('welcome');
+  const inputEl = document.getElementById('input');
+  const sendBtn = document.getElementById('sendBtn');
+  const configPanel = document.getElementById('configPanel');
+  const cfgLength = document.getElementById('cfgLength');
+  
+  const historyList = document.getElementById('historyList');
+  const pinnedList = document.getElementById('pinnedList');
+  const historyEmptyState = document.getElementById('historyEmptyState');
+  const pinnedEmptyState = document.getElementById('pinnedEmptyState');
+
+  const profileNameLabel = document.getElementById('profileNameLabel');
+  const avatarIcon = document.getElementById('avatarIcon');
+  const cfgUserIdentifier = document.getElementById('cfgUserIdentifier');
+  const agentTitle = document.getElementById('currentAgentTitle');
+
+  let currentChatSessionElement = null;
+  let chatHistory = []; 
+
+  // ChatGPT Enter Key Listener
+  inputEl.addEventListener("keypress", function(e) {
+    if (e.key === "Enter") sendMessage();
+  });
+
+  function useSuggestion(val) { inputEl.value = val; sendMessage(); }
+  function toggleConfigPanel() { configPanel.classList.toggle('open'); }
+
+  function setAgent(agent) {
+    currentAgent = agent;
+    const titleMapping = {
+      research: "Research Assistant",
+      document: "Document Chatbot",
+      coding: "Coding Intelligence",
+      writer: "Content Writer",
+      business: "Business Knowledge Bot"
+    };
+    agentTitle.textContent = titleMapping[agent];
+
+    document.querySelectorAll('#agentList .chat-item').forEach(item => {
+      item.classList.remove('active');
+    });
+    document.getElementById(`agent-${agent}`).classList.add('active');
+  }
+
+  function updateSystemLabels() {
+    profileNameLabel.textContent = cfgUserIdentifier.value || 'User';
+    avatarIcon.textContent = (cfgUserIdentifier.value || 'U').charAt(0).toUpperCase();
+  }
+
+  function newChat() {
+    wrapper.innerHTML = '';
+    wrapper.appendChild(welcome);
+    welcome.style.display = 'flex';
+    currentChatSessionElement = null;
+    chatHistory = [];
+    document.querySelectorAll('#historyList .chat-item, #pinnedList .chat-item').forEach(i => i.classList.remove('active'));
+  }
+
+  function addOrUpdateHistory(firstMsgText) {
+    if (currentChatSessionElement) return;
+    if (historyEmptyState) historyEmptyState.style.display = 'none';
+
+    const truncated = firstMsgText.length > 22 ? firstMsgText.slice(0, 20) + '...' : firstMsgText;
+    const item = document.createElement('div');
+    item.className = 'chat-item active';
+    
+    const mainWrap = document.createElement('div');
+    mainWrap.className = 'chat-item-main';
+    
+    const icon = document.createElement('span');
+    icon.className = 'chat-item-icon';
+    icon.textContent = '💬';
+    
+    const textSpan = document.createElement('span');
+    textSpan.className = 'chat-item-text';
+    textSpan.textContent = truncated;
+    
+    mainWrap.appendChild(icon);
+    mainWrap.appendChild(textSpan);
+    item.appendChild(mainWrap);
+
+    const pinBtn = document.createElement('button');
+    pinBtn.className = 'pin-action-btn';
+    pinBtn.innerHTML = '📌';
+    pinBtn.onclick = (e) => { e.stopPropagation(); togglePinElement(item); };
+    item.appendChild(pinBtn);
+    
+    item.onclick = () => {
+      document.querySelectorAll('#historyList .chat-item, #pinnedList .chat-item').forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
+    };
+
+    historyList.insertBefore(item, historyList.firstChild);
+    currentChatSessionElement = item;
+  }
+
+  function togglePinElement(itemElement) {
+    const isPinned = itemElement.parentElement.id === 'pinnedList';
+    if (!isPinned) {
+      if (pinnedEmptyState) pinnedEmptyState.style.display = 'none';
+      pinnedList.appendChild(itemElement);
+    } else {
+      historyList.insertBefore(itemElement, historyList.firstChild);
+    }
+    pinnedEmptyState.style.display = pinnedList.querySelectorAll('.chat-item').length === 0 ? 'block' : 'none';
+    historyEmptyState.style.display = historyList.querySelectorAll('.chat-item').length === 0 ? 'block' : 'none';
+  }
+
+  // CLEAN TEXT VIEW COMPILER
+  function appendTextBlock(text, role) {
+    if(welcome) welcome.style.display = 'none';
+    
+    const block = document.createElement('div');
+    block.className = 'msg-wrapper';
+    
+    const label = document.createElement('span');
+    label.className = `msg-label ${role}-label`;
+    label.textContent = role === 'user' ? `${profileNameLabel.textContent}:` : 'AI Assistant:';
+    
+    const bodyText = document.createElement('div');
+    bodyText.textContent = text;
+    
+    block.appendChild(label);
+    block.appendChild(bodyText);
+    wrapper.appendChild(block);
+    
+    // Auto-scroll update
+    wrapper.scrollTop = wrapper.scrollHeight;
+    return bodyText;
+  }
+
+  async function sendMessage() {
+    const text = inputEl.value.trim();
+    if (!text) return;
+
+    appendTextBlock(text, 'user');
+    addOrUpdateHistory(text);
+    
+    chatHistory.push({ role: "user", content: text });
+    
+    // Capture stateful control parameters
+    const lengthSetting = cfgLength.value;
+    
+    // Clear input bar instantly
+    inputEl.value = '';
+    sendBtn.disabled = true;
+
+    const typing = appendTextBlock('Thinking...', 'bot');
+
+    try {
+      const res = await fetch("http://localhost:3000/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          messages: chatHistory,
+          agent: currentAgent,
+          length: lengthSetting
+        })
+      });
+      const data = await res.json();
+      const replyText = data.reply || "No response received.";
+      
+      typing.textContent = replyText;
+      chatHistory.push({ role: "assistant", content: replyText });
+    } catch (err) {
+      typing.textContent = "⚠️ Link Offline. Make sure your local node backend server is actively running.";
+    }
+    sendBtn.disabled = false;
+  }
+</script>
+</body>
+</html>
