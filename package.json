@@ -8,6 +8,7 @@
     "start": "node server.js"
   },
   "dependencies": {
+    "@lavily/core": "^1.0.4",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
