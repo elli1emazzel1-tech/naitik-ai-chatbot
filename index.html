@@ -16,15 +16,18 @@
       font-family: 'Inter', sans-serif;
       background: #1e1e1e;
       color: #e3e3e3;
-      display: flex;
       height: 100vh;
       overflow: hidden;
+      display: flex;
       justify-content: center;
       align-items: center;
+      position: relative;
     }
 
     /* ── AUTH BOX STYLES ── */
     #auth-container {
+      position: absolute;
+      z-index: 999;
       max-width: 400px;
       width: 100%;
       padding: 30px;
@@ -32,7 +35,7 @@
       border: 1px solid #2f2f2f;
       border-radius: 12px;
       text-align: center;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
     }
     #auth-container h2 {
       font-size: 24px;
@@ -282,7 +285,7 @@
   <div class="auth-divider" id="authDivider">OR</div>
   <div id="google-btn-wrapper">
     <div id="g_id_onload"
-         data-client_id="YOUR_GOOGLE_CLIENT_ID_GOES_HERE"
+         data-client_id="1018324977774-rdrtgjee3otmkl2f21r4ha2ul6dporqk.apps.googleusercontent.com"
          data-context="signin"
          data-ux_mode="popup"
          data-callback="handleGoogleLogin"
@@ -304,7 +307,7 @@
   </div>
 </div>
 
-<div id="app-workspace" style="display: none;">
+<div id="app-workspace">
   <div class="sidebar">
     <div class="sidebar-top-section">
       <div class="sidebar-top">
