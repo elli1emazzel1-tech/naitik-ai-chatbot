@@ -16,6 +16,70 @@
       display: flex;
       height: 100vh;
       overflow: hidden;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* ── AUTH BOX STYLES ── */
+    #auth-container {
+      max-width: 400px;
+      width: 100%;
+      padding: 30px;
+      background: #171717;
+      border: 1px solid #2f2f2f;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    }
+    #auth-container h2 {
+      font-size: 24px;
+      font-weight: 500;
+      color: #ffffff;
+      margin-bottom: 20px;
+    }
+    .auth-input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      background: #212121;
+      color: white;
+      border: 1px solid #3c3c3c;
+      border-radius: 6px;
+      outline: none;
+      font-family: inherit;
+      font-size: 14px;
+    }
+    .auth-input:focus { border-color: #007acc; }
+    .auth-btn {
+      width: 100%;
+      padding: 12px;
+      margin-top: 15px;
+      background: #007acc;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 15px;
+    }
+    .auth-btn:hover { background: #0062a3; }
+    .auth-switch {
+      margin-top: 20px;
+      font-size: 13.5px;
+      color: #8e8e8e;
+    }
+    .auth-switch a {
+      color: #007acc;
+      text-decoration: none;
+      font-weight: 500;
+      margin-left: 5px;
+    }
+
+    /* ── MAIN WORKSPACE STRUCTURE ── */
+    #app-workspace {
+      display: none; /* Hidden until authenticated */
+      width: 100%;
+      height: 100%;
     }
 
     /* ── SIDEBAR STYLE ── */
@@ -27,6 +91,7 @@
       border-right: 1px solid #2f2f2f;
       flex-shrink: 0;
       justify-content: space-between;
+      height: 100%;
     }
     .sidebar-top-section { flex: 1; overflow-y: auto; }
     .sidebar-top { padding: 16px; }
@@ -110,7 +175,7 @@
     .profile-name { font-size: 14px; color: #e3e3e3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     /* ── MAIN WORKSPACE ── */
-    .chat-area { flex: 1; display: flex; flex-direction: column; background: #212121; position: relative; }
+    .chat-area { flex: 1; display: flex; flex-direction: column; background: #212121; position: relative; height: 100%; }
     .chat-header { padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; }
     .header-left { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: #e3e3e3; }
     .header-left::before { content: "●"; color: #4b96ff; font-size: 10px; }
@@ -181,113 +246,173 @@
 </head>
 <body>
 
-<div class="sidebar">
-  <div class="sidebar-top-section">
-    <div class="sidebar-top">
-      <button class="new-chat-btn" onclick="newChat()"><span>+</span> New chat</button>
-    </div>
-    
-    <div class="sidebar-label">Active Agents</div>
-    <div class="chat-list" id="agentList">
-      <div id="agent-research" class="chat-item active" onclick="setAgent('research')">
-        <div class="chat-item-main"><span class="chat-item-icon">🔍</span><span class="chat-item-text">Research Assistant</span></div>
-      </div>
-      <div id="agent-document" class="chat-item" onclick="setAgent('document')">
-        <div class="chat-item-main"><span class="chat-item-icon">📂</span><span class="chat-item-text">Document Chatbot</span></div>
-      </div>
-      <div id="agent-coding" class="chat-item" onclick="setAgent('coding')">
-        <div class="chat-item-main"><span class="chat-item-icon">💻</span><span class="chat-item-text">Coding Intelligence</span></div>
-      </div>
-      <div id="agent-writer" class="chat-item" onclick="setAgent('writer')">
-        <div class="chat-item-main"><span class="chat-item-icon">✍️</span><span class="chat-item-text">Content Writer</span></div>
-      </div>
-      <div id="agent-business" class="chat-item" onclick="setAgent('business')">
-        <div class="chat-item-main"><span class="chat-item-icon">📊</span><span class="chat-item-text">Business Knowledge Bot</span></div>
-      </div>
-    </div>
-
-    <div class="sidebar-label">Pinned</div>
-    <div class="chat-list" id="pinnedList">
-      <div class="empty-log-text" id="pinnedEmptyState">No pinned chats</div>
-    </div>
-
-    <div class="sidebar-label">Recents</div>
-    <div class="chat-list" id="historyList">
-      <div class="empty-log-text" id="historyEmptyState">No recent conversations</div>
-    </div>
-  </div>
-
-  <div class="sidebar-footer">
-    <div class="profile-section">
-      <div class="avatar" id="avatarIcon">N</div>
-      <span class="profile-name" id="profileNameLabel">Naitik</span>
-    </div>
+<div id="auth-container">
+  <h2 id="auth-title">Login to AI Assistant</h2>
+  <input type="text" id="auth-username" class="auth-input" placeholder="Username">
+  <input type="password" id="auth-password" class="auth-input" placeholder="Password">
+  <button id="auth-submit-btn" class="auth-btn" onclick="handleAuth()">Login</button>
+  <div class="auth-switch">
+    <span id="auth-switch-text">Don't have an account?</span> 
+    <a href="#" onclick="toggleAuthMode()" id="auth-link">Sign Up</a>
   </div>
 </div>
 
-<div class="chat-area">
-  <div class="chat-header">
-    <div class="header-left" id="currentAgentTitle">Research Assistant</div>
-    <div class="header-right">Powered by AI Cluster</div>
-  </div>
-
-  <div id="messagesWrapper" class="messages">
-    <div id="welcome" class="welcome">
-      <div class="welcome-star">★</div>
-      <h2>How can I help you today?</h2>
-      <p>Ask me anything — I will switch system modes depending on your active selected Agent side panel tool.</p>
+<div id="app-workspace" style="display: flex;">
+  <div class="sidebar">
+    <div class="sidebar-top-section">
+      <div class="sidebar-top">
+        <button class="new-chat-btn" onclick="newChat()"><span>+</span> New chat</button>
+      </div>
       
-      <div class="suggestion-grid">
-        <div class="suggestion" onclick="useSuggestion('Search the web for latest news today')">
-          <strong>🔍 Search the web</strong>Latest news today
+      <div class="sidebar-label">Active Agents</div>
+      <div class="chat-list" id="agentList">
+        <div id="agent-research" class="chat-item active" onclick="setAgent('research')">
+          <div class="chat-item-main"><span class="chat-item-icon">🔍</span><span class="chat-item-text">Research Assistant</span></div>
         </div>
-        <div class="suggestion" onclick="useSuggestion('Explain how AI works')">
-          <strong>💡 Explain something</strong>How does AI work?
+        <div id="agent-document" class="chat-item" onclick="setAgent('document')">
+          <div class="chat-item-main"><span class="chat-item-icon">📂</span><span class="chat-item-text">Document Chatbot</span></div>
         </div>
-        <div class="suggestion" onclick="useSuggestion('Draft a short email')">
-          <strong>✍️ Write for me</strong>Draft a short email
+        <div id="agent-coding" class="chat-item" onclick="setAgent('coding')">
+          <div class="chat-item-main"><span class="chat-item-icon">💻</span><span class="chat-item-text">Coding Intelligence</span></div>
         </div>
-        <div class="suggestion" onclick="useSuggestion('Help me with math')">
-          <strong>🧮 Solve a problem</strong>Help me with math
+        <div id="agent-writer" class="chat-item" onclick="setAgent('writer')">
+          <div class="chat-item-main"><span class="chat-item-icon">✍️</span><span class="chat-item-text">Content Writer</span></div>
         </div>
+        <div id="agent-business" class="chat-item" onclick="setAgent('business')">
+          <div class="chat-item-main"><span class="chat-item-icon">📊</span><span class="chat-item-text">Business Knowledge Bot</span></div>
+        </div>
+      </div>
+
+      <div class="sidebar-label">Pinned</div>
+      <div class="chat-list" id="pinnedList">
+        <div class="empty-log-text" id="pinnedEmptyState">No pinned chats</div>
+      </div>
+
+      <div class="sidebar-label">Recents</div>
+      <div class="chat-list" id="historyList">
+        <div class="empty-log-text" id="historyEmptyState">No recent conversations</div>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="profile-section">
+        <div class="avatar" id="avatarIcon">N</div>
+        <span class="profile-name" id="profileNameLabel">Naitik</span>
       </div>
     </div>
   </div>
 
-  <div class="input-wrap">
-    <div class="input-inner">
-      <button class="action-btn" title="System Configuration" onclick="toggleConfigPanel()">+</button>
-      <input type="text" id="input" placeholder="Message AI Assistant...">
-      <button class="clear-chat-btn" onclick="newChat()">Clear Chat</button>
-      <button class="send-btn" id="sendBtn" onclick="sendMessage()">➔</button>
+  <div class="chat-area">
+    <div class="chat-header">
+      <div class="header-left" id="currentAgentTitle">Research Assistant</div>
+      <div class="header-right">Powered by AI Cluster</div>
     </div>
-    <div class="input-hint">AI can make mistakes. Always verify important info.</div>
-  </div>
 
-  <div class="config-panel" id="configPanel">
-    <div class="config-header">
-      <h3>System Configuration</h3>
-      <button class="config-header-close" onclick="toggleConfigPanel()">✕</button>
-    </div>
-    <div class="config-body">
-      <div class="config-group">
-        <label for="cfgLength">Response Length:</label>
-        <select id="cfgLength">
-          <option value="short">Short (Concise)</option>
-          <option value="medium" selected>Medium (Standard)</option>
-          <option value="long">Long (Detailed Explanation)</option>
-        </select>
+    <div id="messagesWrapper" class="messages">
+      <div id="welcome" class="welcome">
+        <div class="welcome-star">★</div>
+        <h2>How can I help you today?</h2>
+        <p>Ask me anything — I will switch system modes depending on your active selected Agent side panel tool.</p>
+        
+        <div class="suggestion-grid">
+          <div class="suggestion" onclick="useSuggestion('Search the web for latest news today')">
+            <strong>🔍 Search the web</strong>Latest news today
+          </div>
+          <div class="suggestion" onclick="useSuggestion('Explain how AI works')">
+            <strong>💡 Explain something</strong>How does AI work?
+          </div>
+          <div class="suggestion" onclick="useSuggestion('Draft a short email')">
+            <strong>✍️ Write for me</strong>Draft a short email
+          </div>
+          <div class="suggestion" onclick="useSuggestion('Help me with math')">
+            <strong>🧮 Solve a problem</strong>Help me with math
+          </div>
+        </div>
       </div>
-      <hr style="border: 0; border-top: 1px solid #2f2f2f; margin: 8px 0;">
-      <div class="config-group">
-        <label>User Identifier:</label>
-        <input type="text" id="cfgUserIdentifier" value="Naitik" oninput="updateSystemLabels()">
+    </div>
+
+    <div class="input-wrap">
+      <div class="input-inner">
+        <button class="action-btn" title="System Configuration" onclick="toggleConfigPanel()">+</button>
+        <input type="text" id="input" placeholder="Message AI Assistant...">
+        <button class="clear-chat-btn" onclick="newChat()">Clear Chat</button>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">➔</button>
+      </div>
+      <div class="input-hint">AI can make mistakes. Always verify important info.</div>
+    </div>
+
+    <div class="config-panel" id="configPanel">
+      <div class="config-header">
+        <h3>System Configuration</h3>
+        <button class="config-header-close" onclick="toggleConfigPanel()">✕</button>
+      </div>
+      <div class="config-body">
+        <div class="config-group">
+          <label for="cfgLength">Response Length:</label>
+          <select id="cfgLength">
+            <option value="short">Short (Concise)</option>
+            <option value="medium" selected>Medium (Standard)</option>
+            <option value="long">Long (Detailed Explanation)</option>
+          </select>
+        </div>
+        <hr style="border: 0; border-top: 1px solid #2f2f2f; margin: 8px 0;">
+        <div class="config-group">
+          <label>User Identifier:</label>
+          <input type="text" id="cfgUserIdentifier" value="Naitik" oninput="updateSystemLabels()">
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 <script>
+  let isLoginMode = true;
+  const BACKEND_URL = "https://naitik-chatbot-backend.onrender.com"; 
+
+  function toggleAuthMode() {
+    isLoginMode = !isLoginMode;
+    document.getElementById("auth-title").innerText = isLoginMode ? "Login to AI Assistant" : "Create Account";
+    document.getElementById("auth-submit-btn").innerText = isLoginMode ? "Login" : "Sign Up";
+    document.getElementById("auth-switch-text").innerText = isLoginMode ? "Don't have an account?" : "Already have an account?";
+    document.getElementById("auth-link").innerText = isLoginMode ? "Sign Up" : "Login";
+  }
+
+  async function handleAuth() {
+    const username = document.getElementById("auth-username").value.trim();
+    const password = document.getElementById("auth-password").value.trim();
+    
+    if (!username || !password) return alert("Please fill in all fields.");
+
+    const endpoint = isLoginMode ? "/api/login" : "/api/signup";
+    
+    try {
+      const res = await fetch(`${BACKEND_URL}${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok) {
+        if (isLoginMode) {
+          alert("🎉 Login successful!");
+          document.getElementById("auth-container").style.display = "none";
+          document.getElementById("app-workspace").style.display = "flex"; 
+          cfgUserIdentifier.value = data.username || "User";
+          updateSystemLabels();
+        } else {
+          alert("🚀 Account created successfully! Please log in.");
+          toggleAuthMode();
+        }
+      } else {
+        alert(data.reply || "Authentication failed.");
+      }
+    } catch (err) {
+      alert("Connection error: Cannot reach backend server.");
+    }
+  }
+
   let currentAgent = "research";
 
   const agents = {
@@ -318,7 +443,7 @@
   let currentChatSessionElement = null;
   let chatHistory = []; 
 
-  // ChatGPT Enter Key Listener
+  // Enter Key Listener
   inputEl.addEventListener("keypress", function(e) {
     if (e.key === "Enter") sendMessage();
   });
@@ -407,7 +532,6 @@
     historyEmptyState.style.display = historyList.querySelectorAll('.chat-item').length === 0 ? 'block' : 'none';
   }
 
-  // CLEAN TEXT VIEW COMPILER
   function appendTextBlock(text, role) {
     if(welcome) welcome.style.display = 'none';
     
@@ -425,7 +549,6 @@
     block.appendChild(bodyText);
     wrapper.appendChild(block);
     
-    // Auto-scroll update
     wrapper.scrollTop = wrapper.scrollHeight;
     return bodyText;
   }
@@ -438,19 +561,15 @@
     addOrUpdateHistory(text);
     
     chatHistory.push({ role: "user", content: text });
-    
-    // Capture stateful control parameters
     const lengthSetting = cfgLength.value;
     
-    // Clear input bar instantly
     inputEl.value = '';
     sendBtn.disabled = true;
 
     const typing = appendTextBlock('Thinking...', 'bot');
 
     try {
-      // Switched endpoint to point directly to the live Render backend instance
-      const res = await fetch("https://naitik-chatbot-backend.onrender.com/chat", {
+      const res = await fetch(`${BACKEND_URL}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
