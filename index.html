@@ -6,6 +6,9 @@
   <title>AI Assistant</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -63,6 +66,30 @@
       font-size: 15px;
     }
     .auth-btn:hover { background: #0062a3; }
+    
+    /* ── GOOGLE AUTH STYLES ── */
+    .auth-divider {
+      margin: 20px 0;
+      display: flex;
+      align-items: center;
+      text-align: center;
+      font-size: 12px;
+      color: #8e8e8e;
+    }
+    .auth-divider::before, .auth-divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid #2f2f2f;
+    }
+    .auth-divider:not(:empty)::before { margin-right: .5em; }
+    .auth-divider:not(:empty)::after { margin-left: .5em; }
+
+    #google-btn-wrapper {
+      display: flex;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
     .auth-switch {
       margin-top: 20px;
       font-size: 13.5px;
@@ -251,6 +278,26 @@
   <input type="text" id="auth-username" class="auth-input" placeholder="Username">
   <input type="password" id="auth-password" class="auth-input" placeholder="Password">
   <button id="auth-submit-btn" class="auth-btn" onclick="handleAuth()">Login</button>
+  
+  <div class="auth-divider" id="authDivider">OR</div>
+  <div id="google-btn-wrapper">
+    <div id="g_id_onload"
+         data-client_id="YOUR_GOOGLE_CLIENT_ID_GOES_HERE"
+         data-context="signin"
+         data-ux_mode="popup"
+         data-callback="handleGoogleLogin"
+         data-auto_prompt="false">
+    </div>
+    <div class="g_id_signin"
+         data-type="standard"
+         data-shape="semi_rounded"
+         data-theme="filled_blue"
+         data-text="signin_with"
+         data-size="large"
+         data-logo_alignment="left">
+    </div>
+  </div>
+
   <div class="auth-switch">
     <span id="auth-switch-text">Don't have an account?</span> 
     <a href="#" onclick="toggleAuthMode()" id="auth-link">Sign Up</a>
@@ -375,6 +422,14 @@
     document.getElementById("auth-submit-btn").innerText = isLoginMode ? "Login" : "Sign Up";
     document.getElementById("auth-switch-text").innerText = isLoginMode ? "Don't have an account?" : "Already have an account?";
     document.getElementById("auth-link").innerText = isLoginMode ? "Sign Up" : "Login";
+    
+    // Hide Google button container in Sign Up mode to keep it simple
+    const googleWrapper = document.getElementById("google-btn-wrapper");
+    const authDivider = document.getElementById("authDivider");
+    if (googleWrapper && authDivider) {
+      googleWrapper.style.display = isLoginMode ? "flex" : "none";
+      authDivider.style.display = isLoginMode ? "flex" : "none";
+    }
   }
 
   async function handleAuth() {
@@ -407,6 +462,30 @@
         }
       } else {
         alert(data.reply || "Authentication failed.");
+      }
+    } catch (err) {
+      alert("Connection error: Cannot reach backend server.");
+    }
+  }
+
+  async function handleGoogleLogin(response) {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/google-login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: response.credential })
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok) {
+        alert("🎉 Google Login successful!");
+        document.getElementById("auth-container").style.display = "none";
+        document.getElementById("app-workspace").style.display = "flex"; 
+        cfgUserIdentifier.value = data.username || "Google User";
+        updateSystemLabels();
+      } else {
+        alert(data.reply || "Google Authentication failed.");
       }
     } catch (err) {
       alert("Connection error: Cannot reach backend server.");
