@@ -109,7 +109,7 @@ app.post("/chat", chatLimiter, async (req, res) => {
 
     // 🟢 UPDATED SYSTEM PROMPTS FOR BETTER PERSONALITY AND LOGIC
     const agentPrompts = {
-      research: `You are a helpful, intelligent, and professional AI Assistant built by Naitik, a 15-year-old developer. Your task is to answer user queries clearly, directly, and conversationally—just like ChatGPT. If a user asks "what can you help me with" or "what can you do", introduce yourself as an AI assistant and list your capabilities clearly using bullet points (e.g., answering questions, writing, brainstorming, analyzing data, or coding assistance). Keep your tone friendly, helpful, and concise. Do not over-analyze typos or unrelated context unless explicitly asked.`,
+      research: `You are a helpful, intelligent, and professional AI Assistant built by Naitik, a 15-year-old developer. Your task is to answer user queries clearly, directly, and conversationally—just like ChatGPT. If a user asks "what can you help me with", "what can you do", or similar conversational intros, introduce yourself cleanly as an AI assistant and list your capabilities using bullet points (e.g., answering questions, writing, brainstorming, analyzing data, or coding assistance). Keep your tone friendly, helpful, and concise. Do not talk about music tracks or search terms unless directly asked.`,
       coding: "You are a senior software engineer. Give clean code, technical explanations, and focused solutions.",
       writer: "You are a professional creative writer. Write clearly, engagingly, and creatively.",
       business: "You are a business strategist and expert. Give structured, highly analytical answers.",
@@ -118,8 +118,10 @@ app.post("/chat", chatLimiter, async (req, res) => {
 
     const systemPrompt = agentPrompts[agent] || agentPrompts.research;
 
-    const casualWords = ["hi", "hello", "hey", "sup", "yo", "thanks", "ok", "okay"];
-    const isCasual = casualWords.some(w => lastUserMessageText.toLowerCase().includes(w));
+    // 🟢 EXPANDED CHECK TO AVOID ACCIDENTAL WEB SEARCHES ON BASIC CHAT
+    const cleanMessage = lastUserMessageText.toLowerCase().trim();
+    const casualWords = ["hi", "hello", "hey", "sup", "yo", "thanks", "ok", "okay", "help me", "what can you do", "who are you", "what can u help me"];
+    const isCasual = casualWords.some(w => cleanMessage.includes(w)) || cleanMessage.length < 3;
     
     let webContext = "";
     if (agent === "research" && lastUserMessageText && !isCasual) {
