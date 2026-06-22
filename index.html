@@ -242,12 +242,10 @@
     }
     .profile-name { font-size: 14px; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    /* ── MAIN WORKSPACE ── */
-    .chat-area { flex: 1; display: flex; flex-direction: column; background: var(--bg-main); position: relative; height: 100%; }
-    .chat-header { padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); }
-    .header-left { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: var(--text-main); }
-    .header-left::before { content: "●"; color: #4b96ff; font-size: 10px; }
-    .header-right { font-size: 12px; color: var(--text-muted); }
+    .logout-footer-btn {
+      background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 12px; padding: 4px 8px; border-radius: 4px;
+    }
+    .logout-footer-btn:hover { color: #ff5c5c; background: var(--bg-input); }
 
     /* MODERN SYMMETRICAL CHAT STREAM - LEFT/RIGHT ALIGNMENT - ZERO BUBBLES */
     .messages { flex: 1; overflow-y: auto; padding: 24px 20px; max-width: 850px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; }
@@ -260,13 +258,11 @@
       max-width: 75%;
     }
     
-    /* User: Align block container to the right side, and align text content right */
     .msg-wrapper.user-wrapper { 
       align-self: flex-end; 
       text-align: right;
     }
     
-    /* Bot: Align block container to the left side, and align text content left */
     .msg-wrapper.bot-wrapper { 
       align-self: flex-start; 
       text-align: left;
@@ -291,6 +287,12 @@
       word-break: break-word;
       color: var(--text-main);
     }
+
+    .chat-area { flex: 1; display: flex; flex-direction: column; background: var(--bg-main); position: relative; height: 100%; }
+    .chat-header { padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); }
+    .header-left { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: var(--text-main); }
+    .header-left::before { content: "●"; color: #4b96ff; font-size: 10px; }
+    .header-right { font-size: 12px; color: var(--text-muted); }
 
     /* WELCOME SCREEN */
     .welcome { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 0; text-align: center; margin: auto; }
@@ -419,6 +421,7 @@
         <div class="avatar" id="avatarIcon">N</div>
         <span class="profile-name" id="profileNameLabel">Naitik</span>
       </div>
+      <button class="logout-footer-btn" onclick="handleLogout()">Log out</button>
     </div>
   </div>
 
@@ -522,6 +525,17 @@
   let isLoginMode = true;
   const BACKEND_URL = "https://naitik-chatbot-backend.onrender.com"; 
 
+  // AUTOMATIC SESSION RESTORE ON PAGE LOAD
+  window.addEventListener("DOMContentLoaded", () => {
+    const savedUser = localStorage.getItem("savedUsername");
+    if (savedUser) {
+      document.getElementById("auth-container").style.display = "none";
+      document.getElementById("app-workspace").style.display = "flex"; 
+      cfgUserIdentifier.value = savedUser;
+      updateSystemLabels();
+    }
+  });
+
   function toggleAuthMode() {
     isLoginMode = !isLoginMode;
     document.getElementById("auth-title").innerText = isLoginMode ? "Login to AI Assistant" : "Create Account";
@@ -557,9 +571,13 @@
       if (res.ok) {
         if (isLoginMode) {
           alert("🎉 Login successful!");
+          
+          // Persistent Storage Save
+          localStorage.setItem("savedUsername", data.username || username);
+          
           document.getElementById("auth-container").style.display = "none";
           document.getElementById("app-workspace").style.display = "flex"; 
-          cfgUserIdentifier.value = data.username || "User";
+          cfgUserIdentifier.value = data.username || username;
           updateSystemLabels();
         } else {
           alert("🚀 Account created successfully! Please log in.");
@@ -585,6 +603,10 @@
       
       if (res.ok) {
         alert("🎉 Google Login successful!");
+        
+        // Persistent Storage Save
+        localStorage.setItem("savedUsername", data.username || "Google User");
+        
         document.getElementById("auth-container").style.display = "none";
         document.getElementById("app-workspace").style.display = "flex"; 
         cfgUserIdentifier.value = data.username || "Google User";
@@ -595,6 +617,11 @@
     } catch (err) {
       alert("Connection error: Cannot reach backend server.");
     }
+  }
+
+  function handleLogout() {
+    localStorage.removeItem("savedUsername");
+    window.location.reload();
   }
 
   let currentAgent = "research";
