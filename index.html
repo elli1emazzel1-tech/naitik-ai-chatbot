@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>AI Assistant</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -67,7 +67,7 @@
       position: absolute;
       z-index: 999;
       max-width: 400px;
-      width: 100%;
+      width: 90%;
       padding: 30px;
       background: #171717;
       border: 1px solid #2f2f2f;
@@ -159,9 +159,10 @@
       flex-shrink: 0;
       justify-content: space-between;
       height: 100%;
+      transition: transform 0.3s ease;
     }
     .sidebar-top-section { flex: 1; overflow-y: auto; }
-    .sidebar-top { padding: 16px; }
+    .sidebar-top { padding: 16px; display: flex; gap: 8px; }
     
     .new-chat-btn {
       width: 100%;
@@ -175,6 +176,7 @@
       cursor: pointer;
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
       transition: background 0.2s;
     }
@@ -288,17 +290,30 @@
       color: var(--text-main);
     }
 
-    .chat-area { flex: 1; display: flex; flex-direction: column; background: var(--bg-main); position: relative; height: 100%; }
-    .chat-header { padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); }
-    .header-left { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: var(--text-main); }
-    .header-left::before { content: "●"; color: #4b96ff; font-size: 10px; }
-    .header-right { font-size: 12px; color: var(--text-muted); }
+    .chat-area { flex: 1; display: flex; flex-direction: column; background: var(--bg-main); position: relative; height: 100%; min-width: 0; }
+    .chat-header { padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); gap: 10px; }
+    .header-left { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: var(--text-main); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .header-left::before { content: "●"; color: #4b96ff; font-size: 10px; flex-shrink: 0; }
+    .header-right { font-size: 12px; color: var(--text-muted); flex-shrink: 0; }
+
+    /* MOBILE SIDEBAR TOGGLE BUTTON */
+    .mobile-menu-toggle {
+      display: none;
+      background: transparent;
+      border: none;
+      color: var(--text-main);
+      font-size: 20px;
+      cursor: pointer;
+      padding: 4px;
+      align-items: center;
+      justify-content: center;
+    }
 
     /* WELCOME SCREEN */
-    .welcome { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 0; text-align: center; margin: auto; }
+    .welcome { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 0; text-align: center; margin: auto; width: 100%; }
     .welcome-star { width: 44px; height: 44px; border-radius: 50%; background: var(--bg-input); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; color: #4b96ff; font-size: 16px; margin-bottom: 24px; }
     .welcome h2 { font-size: 28px; font-weight: 500; color: var(--text-heading); margin-bottom: 12px; }
-    .welcome p { font-size: 14px; color: var(--text-muted); max-width: 480px; margin-bottom: 32px; line-height: 1.4; }
+    .welcome p { font-size: 14px; color: var(--text-muted); max-width: 480px; margin-bottom: 32px; line-height: 1.4; padding: 0 10px; }
 
     .suggestion-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; max-width: 640px; }
     .suggestion { padding: 14px 16px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 10px; font-size: 13px; color: var(--text-muted); cursor: pointer; text-align: left; line-height: 1.4; }
@@ -309,16 +324,16 @@
     .input-wrap { padding: 0 40px 20px; max-width: 850px; margin: 0 auto; width: 100%; }
     .input-inner { background: var(--bg-input); border-radius: 24px; display: flex; align-items: center; padding: 6px 14px; gap: 8px; border: 1px solid var(--border-color); }
     
-    .action-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; font-weight: bold; }
+    .action-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; font-weight: bold; flex-shrink: 0; }
     .action-btn:hover { color: var(--text-heading); background: var(--border-color); }
     
-    #input { flex: 1; background: transparent; border: none; outline: none; color: var(--text-heading); font-size: 15px; font-family: inherit; padding: 8px 4px; }
+    #input { flex: 1; background: transparent; border: none; outline: none; color: var(--text-heading); font-size: 15px; font-family: inherit; padding: 8px 4px; min-width: 0; }
     #input::placeholder { color: var(--text-muted); }
     
-    .clear-chat-btn { background: transparent; border: 1px solid var(--border-color); color: var(--text-muted); border-radius: 16px; padding: 4px 12px; font-size: 12px; font-family: inherit; cursor: pointer; margin-right: 4px; }
+    .clear-chat-btn { background: transparent; border: 1px solid var(--border-color); color: var(--text-muted); border-radius: 16px; padding: 4px 12px; font-size: 12px; font-family: inherit; cursor: pointer; margin-right: 4px; flex-shrink: 0; }
     .clear-chat-btn:hover { background: var(--border-color); color: var(--text-heading); }
 
-    .send-btn { width: 28px; height: 28px; border-radius: 50%; background: var(--text-heading); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--bg-main); font-weight: bold; transition: opacity 0.2s; }
+    .send-btn { width: 28px; height: 28px; border-radius: 50%; background: var(--text-heading); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--bg-main); font-weight: bold; transition: opacity 0.2s; flex-shrink: 0; }
     .send-btn:hover { opacity: 0.9; }
     .send-btn:disabled { background: var(--border-color); color: var(--text-muted); cursor: not-allowed; }
 
@@ -344,9 +359,55 @@
     }
     .config-group input[type="color"] { padding: 2px; height: 34px; width: 100%; cursor: pointer; }
     .config-group input[type="range"] { margin-top: 4px; }
+
+    /* ── RESPONSIVE MOBILE MEDIA QUERIES ── */
+    @media (max-width: 768px) {
+      .mobile-menu-toggle { display: flex; }
+      
+      .sidebar {
+        position: absolute;
+        left: 0;
+        top: 0;
+        z-index: 150;
+        transform: translateX(-100%);
+        box-shadow: 4px 0 16px rgba(0,0,0,0.4);
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      
+      .suggestion-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .input-wrap {
+        padding: 0 16px 16px;
+      }
+      
+      .msg-wrapper {
+        max-width: 90%;
+      }
+      
+      .config-panel {
+        width: 100%;
+        right: -100%;
+      }
+      
+      /* Mobile overlay background when sidebar is open */
+      .sidebar-overlay {
+        display: none;
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 140;
+      }
+      .sidebar-overlay.active { display: block; }
+    }
   </style>
 </head>
 <body>
+
+<div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
 
 <div id="auth-container">
   <h2 id="auth-title">Login to AI Assistant</h2>
@@ -380,27 +441,27 @@
 </div>
 
 <div id="app-workspace">
-  <div class="sidebar">
+  <div class="sidebar" id="sidebarMenu">
     <div class="sidebar-top-section">
       <div class="sidebar-top">
-        <button class="new-chat-btn" onclick="newChat()"><span>+</span> New chat</button>
+        <button class="new-chat-btn" onclick="newChat(); toggleMobileSidebar(false);"><span>+</span> New chat</button>
       </div>
       
       <div class="sidebar-label">Active Agents</div>
       <div class="chat-list" id="agentList">
-        <div id="agent-research" class="chat-item active" onclick="setAgent('research')">
+        <div id="agent-research" class="chat-item active" onclick="setAgent('research'); toggleMobileSidebar(false);">
           <div class="chat-item-main"><span class="chat-item-icon">🔍</span><span class="chat-item-text">Research Assistant</span></div>
         </div>
-        <div id="agent-document" class="chat-item" onclick="setAgent('document')">
+        <div id="agent-document" class="chat-item" onclick="setAgent('document'); toggleMobileSidebar(false);">
           <div class="chat-item-main"><span class="chat-item-icon">📂</span><span class="chat-item-text">Document Chatbot</span></div>
         </div>
-        <div id="agent-coding" class="chat-item" onclick="setAgent('coding')">
+        <div id="agent-coding" class="chat-item" onclick="setAgent('coding'); toggleMobileSidebar(false);">
           <div class="chat-item-main"><span class="chat-item-icon">💻</span><span class="chat-item-text">Coding Intelligence</span></div>
         </div>
-        <div id="agent-writer" class="chat-item" onclick="setAgent('writer')">
+        <div id="agent-writer" class="chat-item" onclick="setAgent('writer'); toggleMobileSidebar(false);">
           <div class="chat-item-main"><span class="chat-item-icon">✍️</span><span class="chat-item-text">Content Writer</span></div>
         </div>
-        <div id="agent-business" class="chat-item" onclick="setAgent('business')">
+        <div id="agent-business" class="chat-item" onclick="setAgent('business'); toggleMobileSidebar(false);">
           <div class="chat-item-main"><span class="chat-item-icon">📊</span><span class="chat-item-text">Business Knowledge Bot</span></div>
         </div>
       </div>
@@ -427,7 +488,10 @@
 
   <div class="chat-area">
     <div class="chat-header">
-      <div class="header-left" id="currentAgentTitle">Research Assistant</div>
+      <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+        <button class="mobile-menu-toggle" onclick="toggleMobileSidebar(true)">☰</button>
+        <div class="header-left" id="currentAgentTitle">Research Assistant</div>
+      </div>
       <div class="header-right">Powered by AI Cluster</div>
     </div>
 
@@ -541,6 +605,21 @@
         updateSystemLabels();
       }
     }, 5);
+  }
+
+  function toggleMobileSidebar(shouldOpen) {
+    const sidebar = document.getElementById("sidebarMenu");
+    const overlay = document.getElementById("sidebarOverlay");
+    if (shouldOpen === undefined) {
+      sidebar.classList.toggle("open");
+      overlay.classList.toggle("active");
+    } else if (shouldOpen) {
+      sidebar.classList.add("open");
+      overlay.classList.add("active");
+    } else {
+      sidebar.classList.remove("open");
+      overlay.classList.remove("active");
+    }
   }
 
   function toggleAuthMode() {
@@ -661,7 +740,23 @@
   });
 
   function useSuggestion(val) { inputEl.value = val; sendMessage(); }
-  function toggleConfigPanel() { configPanel.classList.toggle('open'); }
+  
+  function toggleConfigPanel() { 
+    configPanel.classList.toggle('open'); 
+    // Close sidebar if configuration is opened on mobile
+    if(window.innerWidth <= 768) {
+      toggleMobileSidebar(false);
+    }
+  }
+
+  document.addEventListener('click', function(e) {
+    // Close configuration panel if clicking outside of it on mobile
+    if (window.innerWidth <= 768 && configPanel.classList.contains('open')) {
+      if (!configPanel.contains(e.target) && !e.target.matches('.action-btn')) {
+        configPanel.classList.remove('open');
+      }
+    }
+  });
 
   function changeTheme() {
     document.documentElement.setAttribute('data-theme', cfgTheme.value);
@@ -731,6 +826,7 @@
     item.onclick = () => {
       document.querySelectorAll('#historyList .chat-item, #pinnedList .chat-item').forEach(i => i.classList.remove('active'));
       item.classList.add('active');
+      toggleMobileSidebar(false);
     };
 
     historyList.insertBefore(item, historyList.firstChild);
