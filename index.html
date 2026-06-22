@@ -206,18 +206,61 @@
 
     /* ── MAIN WORKSPACE ── */
     .chat-area { flex: 1; display: flex; flex-direction: column; background: #212121; position: relative; height: 100%; }
-    .chat-header { padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; }
+    .chat-header { padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #2f2f2f; }
     .header-left { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: #e3e3e3; }
     .header-left::before { content: "●"; color: #4b96ff; font-size: 10px; }
     .header-right { font-size: 12px; color: #8e8e8e; }
 
-    /* CLEAN TEXT MESSAGES STREAM */
-    .messages { flex: 1; overflow-y: auto; padding: 24px 40px; max-width: 800px; margin: 0 auto; width: 100%; }
-    .msg-wrapper { margin: 18px 0; line-height: 1.6; font-size: 15px; white-space: pre-wrap; word-break: break-word; }
-    .msg-wrapper div { display: inline; }
-    .msg-label { font-weight: 600; margin-bottom: 4px; display: block; color: #ffffff; }
-    .msg-label.user-label { color: #ab68ff; }
-    .msg-label.ai-label { color: #4b96ff; }
+    /* MODERN SYMMETRICAL CHAT MESSAGES STREAM */
+    .messages { flex: 1; overflow-y: auto; padding: 24px 20px; max-width: 900px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; }
+    
+    /* Outer row wrappers to align alignment blocks left or right */
+    .msg-wrapper { 
+      display: flex; 
+      width: 100%; 
+      margin: 10px 0; 
+    }
+    .msg-wrapper.user-wrapper { justify-content: flex-end; }
+    .msg-wrapper.bot-wrapper { justify-content: flex-start; }
+
+    /* Structured content card bubble properties */
+    .msg-bubble {
+      max-width: 70%;
+      padding: 12px 16px;
+      border-radius: 16px;
+      font-size: 15px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      position: relative;
+    }
+
+    /* Small contextual role title badge inside the layout cards */
+    .msg-label { 
+      font-size: 11px; 
+      font-weight: 600; 
+      margin-bottom: 4px; 
+      display: block; 
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    /* Color definitions matching structural types */
+    .user-wrapper .msg-bubble {
+      background-color: #4f46e5; /* Vibrant layout accent */
+      color: #ffffff;
+      border-bottom-right-radius: 4px;
+    }
+    .user-wrapper .msg-label { color: #d9dbff; }
+
+    .bot-wrapper .msg-bubble {
+      background-color: #2e2e2e; /* Slate workspace card structure */
+      color: #e3e3e3;
+      border-bottom-left-radius: 4px;
+      border: 1px solid #3d3d3d;
+    }
+    .bot-wrapper .msg-label { color: #4b96ff; }
 
     /* WELCOME SCREEN */
     .welcome { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 0; text-align: center; margin: auto; }
@@ -231,8 +274,8 @@
     .suggestion strong { display: block; color: #ffffff; font-weight: 500; margin-bottom: 2px; }
 
     /* INPUT CONTROLS */
-    .input-wrap { padding: 0 40px 20px; max-width: 800px; margin: 0 auto; width: 100%; }
-    .input-inner { background: #2f2f2f; border-radius: 24px; display: flex; align-items: center; padding: 6px 14px; gap: 8px; }
+    .input-wrap { padding: 0 40px 20px; max-width: 900px; margin: 0 auto; width: 100%; }
+    .input-inner { background: #2f2f2f; border-radius: 24px; display: flex; align-items: center; padding: 6px 14px; gap: 8px; border: 1px solid #3d3d3d; }
     
     .action-btn { background: transparent; border: none; color: #b4b4b4; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; font-weight: bold; }
     .action-btn:hover { color: #ffffff; background: #3c3c3c; }
@@ -497,14 +540,6 @@
 
   let currentAgent = "research";
 
-  const agents = {
-    research: "You are a research assistant. Give detailed, factual, well-explained answers.",
-    coding: "You are a senior software engineer. Give clean code and technical explanations.",
-    writer: "You are a professional writer. Write clearly and creatively.",
-    business: "You are a business expert. Give structured, analytical answers.",
-    document: "You help analyze documents and data carefully."
-  };
-
   const wrapper = document.getElementById('messagesWrapper');
   const welcome = document.getElementById('welcome');
   const inputEl = document.getElementById('input');
@@ -614,21 +649,26 @@
     historyEmptyState.style.display = historyList.querySelectorAll('.chat-item').length === 0 ? 'block' : 'none';
   }
 
+  /* FIXED: Message elements now build distinct structural wrapper blocks for separation alignment */
   function appendTextBlock(text, role) {
     if(welcome) welcome.style.display = 'none';
     
     const block = document.createElement('div');
-    block.className = 'msg-wrapper';
+    block.className = `msg-wrapper ${role}-wrapper`; // Appends structural 'user-wrapper' or 'bot-wrapper'
+    
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble';
     
     const label = document.createElement('span');
     label.className = `msg-label ${role}-label`;
-    label.textContent = role === 'user' ? `${profileNameLabel.textContent}:` : 'AI Assistant:';
+    label.textContent = role === 'user' ? `${profileNameLabel.textContent}` : 'AI Assistant';
     
     const bodyText = document.createElement('div');
     bodyText.textContent = text;
     
-    block.appendChild(label);
-    block.appendChild(bodyText);
+    bubble.appendChild(label);
+    bubble.appendChild(bodyText);
+    block.appendChild(bubble);
     wrapper.appendChild(block);
     
     wrapper.scrollTop = wrapper.scrollHeight;
