@@ -525,16 +525,23 @@
   let isLoginMode = true;
   const BACKEND_URL = "https://naitik-chatbot-backend.onrender.com"; 
 
-  // AUTOMATIC SESSION RESTORE ON PAGE LOAD
-  window.addEventListener("DOMContentLoaded", () => {
-    const savedUser = localStorage.getItem("savedUsername");
-    if (savedUser) {
-      document.getElementById("auth-container").style.display = "none";
-      document.getElementById("app-workspace").style.display = "flex"; 
-      cfgUserIdentifier.value = savedUser;
-      updateSystemLabels();
-    }
-  });
+  // ── FIX: INSTANT AUTOMATIC SESSION RESTORE ──
+  const savedUser = localStorage.getItem("savedUsername");
+  if (savedUser) {
+    const checkExist = setInterval(() => {
+      const authContainer = document.getElementById("auth-container");
+      const appWorkspace = document.getElementById("app-workspace");
+      const cfgUserIdentifier = document.getElementById("cfgUserIdentifier");
+      
+      if (authContainer && appWorkspace && cfgUserIdentifier) {
+        clearInterval(checkExist);
+        authContainer.style.display = "none";
+        appWorkspace.style.display = "flex"; 
+        cfgUserIdentifier.value = savedUser;
+        updateSystemLabels();
+      }
+    }, 5);
+  }
 
   function toggleAuthMode() {
     isLoginMode = !isLoginMode;
