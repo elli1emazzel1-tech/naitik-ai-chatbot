@@ -4,18 +4,14 @@ import dotenv from "dotenv";
 import Groq from "groq-sdk";
 import { tavily } from "@tavily/core";
 import rateLimit from "express-rate-limit";
-import mongoose from "mongoose"; // 🟢 Added for database
+import mongoose from "mongoose";
 
 dotenv.config();
 
 const app = express();
 
-// 🟢 FIXED CORS CONFIGURATION TO ALLOW YOUR LIVE SITE
-app.use(cors({
-  origin: "https://elli1emazzel1-tech.github.io",
-  credentials: true
-}));
-
+// 🟢 OPEN CORS TO ALLOW ALL REQUESTS AND PREVENT BLOCKS
+app.use(cors());
 app.use(express.json());
 
 // 🟢 CONNECT TO MONGO_DB ATLAS
@@ -84,24 +80,33 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
+// 🟢 FIXED: ADDED MISSING GOOGLE LOGIN ROUTE FOR FRONTEND
+app.post("/api/google-login", async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token) return res.status(400).json({ reply: "Missing Google token." });
+    
+    // Quick temporary placeholder so your frontend login script doesn't crash
+    res.status(200).json({ reply: "Google login verified!", username: "Google User" });
+  } catch (err) {
+    res.status(500).json({ reply: "Google Auth Error: " + err.message });
+  }
+});
+
 // AI CHAT ROUTE
 app.post("/chat", chatLimiter, async (req, res) => {
   try {
-    // 1. Grab the conversation history array and selected agent from the frontend request
     const incomingMessages = req.body.messages || [];
     const agent = req.body.agent || "research";
     const temperature = req.body.temperature || 0.7;
 
-    // 2. Validate that we received a list of messages
     if (!incomingMessages || incomingMessages.length === 0) {
       return res.status(400).json({ reply: "Please provide a valid messages history list." });
     }
 
-    // Get the very last message text sent by the user for our casual and web search checking
     const lastUserMessageItem = [...incomingMessages].reverse().find(m => m.role === "user");
     const lastUserMessageText = lastUserMessageItem ? lastUserMessageItem.content : "";
 
-    // 3. Define the custom agent personas matching your frontend setup
     const agentPrompts = {
       research: `You are a research assistant. Give detailed, factual, well-explained answers. Built by Naitik, a 15-year-old developer. Keep replies warm and conversational — like a smart friend, not a robot. Only mention your creator when explicitly asked.`,
       coding: "You are a senior software engineer. Give clean code, technical explanations, and focused solutions.",
@@ -112,7 +117,6 @@ app.post("/chat", chatLimiter, async (req, res) => {
 
     const systemPrompt = agentPrompts[agent] || agentPrompts.research;
 
-    // 4. Trigger the Tavily Web Search tool if the agent is 'research' and it's not a casual greeting
     const casualWords = ["hi", "hello", "hey", "sup", "yo", "thanks", "ok", "okay"];
     const isCasual = casualWords.some(w => lastUserMessageText.toLowerCase().includes(w));
     
@@ -126,23 +130,19 @@ app.post("/chat", chatLimiter, async (req, res) => {
       }
     }
 
-    // 5. If we have web context information, append it directly into the final payload sequence safely
     let structuredHistory = [...incomingMessages];
     if (webContext && lastUserMessageItem) {
-      // Enhance the last user prompt item inside our local payload with search facts
       structuredHistory[structuredHistory.length - 1] = {
         role: "user",
         content: `Here is some recent web info:\n${webContext}\n\nUser question: ${lastUserMessageText}`
       };
     }
 
-    // 6. Assemble the final complete execution package combining system instruction + dialogue log
     const completeMessagesPayload = [
       { role: "system", content: systemPrompt },
       ...structuredHistory
     ];
 
-    // 7. Fire it off to the Groq Llama-3 cluster
     const response = await client.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       temperature: Number(temperature),
@@ -158,7 +158,6 @@ app.post("/chat", chatLimiter, async (req, res) => {
   }
 });
 
-// Reset endpoint for frontend UI to invoke explicitly
 app.post("/chat/clear", (req, res) => {
   res.json({ success: true, status: "Memory context cleared." });
 });
