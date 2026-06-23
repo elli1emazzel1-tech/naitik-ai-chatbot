@@ -10,6 +10,9 @@ dotenv.config();
 
 const app = express();
 
+// 🟢 TRUST RENDER'S PROXY FOR ACCURATE RATE LIMITING
+app.set('trust proxy', 1);
+
 // 🟢 OPEN CORS TO ALLOW ALL REQUESTS AND PREVENT BLOCKS
 app.use(cors());
 app.use(express.json());
